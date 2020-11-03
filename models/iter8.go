@@ -383,15 +383,3 @@ func (hm *HTTPMatchRequest) parse(m *kubernetes.HTTPMatchRequest) {
 		}
 	}
 }
-
-func parseMatchRule(http []*kubernetes.HTTPMatchRequest) []HTTPMatchRequest {
-
-	var ptr = make([]HTTPMatchRequest, len(http))
-	for i, m := range http {
-
-		nm := HTTPMatchRequest{}
-		nm.parse(m)
-		ptr[i] = nm
-	}
-	return ptr
-}
