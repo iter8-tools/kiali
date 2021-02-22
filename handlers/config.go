@@ -28,6 +28,7 @@ type ClusterInfo struct {
 type Iter8Config struct {
 	Enabled   bool   `json:"enabled"`
 	Namespace string `json:"namespace"`
+	TemplatesConfigMap *string `json:"template_configmap"`
 }
 type Extensions struct {
 	Iter8 Iter8Config `json:"iter8,omitempty"`
@@ -74,6 +75,7 @@ func Config(w http.ResponseWriter, r *http.Request) {
 			Iter8: Iter8Config{
 				Enabled:   config.Extensions.Iter8.Enabled,
 				Namespace: config.Extensions.Iter8.Namespace,
+				TemplatesConfigMap: &config.Extensions.Iter8.TemplateConfigMap,
 			},
 		},
 		InstallationTag: config.InstallationTag,

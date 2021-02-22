@@ -133,6 +133,17 @@ type HTTPMatchRule struct {
 	Match       string `json:"match,omitempty"`
 	StringMatch string `json:"stringMatch,omitempty"`
 }
+type Iter8ExperimentTemplate struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type Iter8ExperimentTemplateSpec struct {
+	ServiceName    string   `json:"service_name"`
+	ExperimentName string   `json:"experiment_name,omitempty"`
+	Baseline       string   `json:"baseline"`
+	Candidates     []string `json:"candidates"`
+}
 
 type Iter8AnalyticsConfig struct {
 	Port       int `yaml:"port,omitempty"`

@@ -37,6 +37,17 @@ func Iter8Experiments(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, experiments)
 }
 
+func Iter8ExperimentTemplates(w http.ResponseWriter, r *http.Request) {
+	business, err := getBusiness(r)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Services initialization error: "+err.Error())
+		return
+	}
+	templates, err := business.Iter8.GetIter8ExperimentTemplates()
+	RespondWithJSON(w, http.StatusOK, templates)
+
+}
+
 func Iter8ExperimentGetYaml(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	business, err := getBusiness(r)
@@ -110,6 +121,28 @@ func Iter8ExperimentGet(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, experiment)
 }
 
+func Iter8ExperimentCreateFromTemplate(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	business, err := getBusiness(r)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Services initialization error: "+err.Error())
+		return
+	}
+	namespace := params["namespace"]
+	templateName := params["template"]
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	experiment, err := business.Iter8.CreateIter8ExperimentFromTemplate(namespace, templateName,  body)
+	if err != nil {
+		handleErrorResponse(w, err)
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, experiment)
+}
+
 func Iter8ExperimentCreate(w http.ResponseWriter, r *http.Request) {
 	jsonBody := false
 	params := mux.Vars(r)
@@ -135,6 +168,7 @@ func Iter8ExperimentCreate(w http.ResponseWriter, r *http.Request) {
 	}
 	RespondWithJSON(w, http.StatusOK, experiment)
 }
+
 
 func Iter8ExperimentUpdate(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)

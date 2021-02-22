@@ -1424,6 +1424,63 @@ func NewRoutes() (r *Routes) {
 			HandlerFunc:   handlers.Iter8ExperimentCreate,
 			Authenticated: true,
 		},
+		// swagger:route GET /iter8/experiments/templates iter8 iter8Experiment Templates
+		// ---
+		// Endpoint to fetch iter8 experiment templates.
+		//
+		// 		Produces:
+		//		- application/json
+		//
+		//		Schemes: http, https
+		//
+		// responses:
+		//		500: internalError
+		//		200: iter8TemplatesResponse
+		{
+			"Iter8ExperimentTemplates",
+			"GET",
+			"/api/iter8/experiments/templates",
+			handlers.Iter8ExperimentTemplates,
+			true,
+		},
+		// swagger:route POST /iter8/namespaces/{namespace}/experiments/{template} iter8 postIter8Experiments
+		// ---
+		// Endpoint to create new iter8 experiments for a given namespace base on predefined temaplte.
+		//
+		// 		Produces:
+		//		- application/json
+		//
+		//		Schemes: http, https
+		//
+		// responses:
+		//		500: internalError
+		//		200: iter8ExperimentGetDetailResponse
+		{
+			Name:          "Iter8ExperimentCreateFromTemplate",
+			Method:        "POST",
+			Pattern:       "/api/iter8/namespaces/{namespace}/templates/{template}",
+			HandlerFunc:   handlers.Iter8ExperimentCreateFromTemplate,
+			Authenticated: true,
+		},
+		// swagger:route POST /iter8/namespaces/{namespace}/experiments iter8 postIter8Experiments
+		// ---
+		// Endpoint to create new iter8 experiments for a given namespace.
+		//
+		// 		Produces:
+		//		- application/json
+		//
+		//		Schemes: http, https
+		//
+		// responses:
+		//		500: internalError
+		//		200: iter8ExperimentGetDetailResponse
+		{
+			Name:          "Iter8ExperimentCreateFromTemplate",
+			Method:        "POST",
+			Pattern:       "/api/iter8/namespaces/{namespace}/experiments/{template}",
+			HandlerFunc:   handlers.Iter8ExperimentCreateFromTemplate,
+			Authenticated: true,
+		},
 		// swagger:route PATCH /iter8/experiments/{namespace}/name/{name} iter8 patchIter8Experiments
 		// ---
 		// Endpoint to update new iter8 experiment (for abort purpose)

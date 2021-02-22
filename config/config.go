@@ -187,6 +187,7 @@ type Iter8Config struct {
 	Enabled bool `yaml:"enabled"`
 	// Define which namespace Iter8 is installed on, default to iter8
 	Namespace string `yaml:"namespace"`
+	TemplateConfigMap string `yaml:"template_configmap"`
 }
 
 // Extensions struct describes configuration for Kiali add-ons (extensions)
@@ -402,6 +403,7 @@ func NewConfig() (c *Config) {
 			Iter8: Iter8Config{
 				Enabled:   false,
 				Namespace: "iter8",
+				TemplateConfigMap: "iter8-configmap-templates",
 			},
 		},
 		ExternalServices: ExternalServices{
