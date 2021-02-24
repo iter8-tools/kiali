@@ -3,23 +3,22 @@ package business
 import (
 	"bytes"
 	"encoding/json"
+	"html/template"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
-	"html/template"
 
 	"gopkg.in/yaml.v2"
 	core_v1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    sigsyaml "sigs.k8s.io/yaml"
+	sigsyaml "sigs.k8s.io/yaml"
 
 	"github.com/kiali/kiali/config"
 	"github.com/kiali/kiali/kubernetes"
 	"github.com/kiali/kiali/models"
 	"github.com/kiali/kiali/prometheus/internalmetrics"
 	"github.com/kiali/kiali/status"
-	"github.com/kiali/kiali/log"
 )
 
 type Iter8Service struct {
@@ -161,23 +160,23 @@ func (in *Iter8Service) GetIter8ExperimentYaml(namespace string, name string) (k
 	return Iter8ExperimentCRD, gErr
 }
 
-func (in *Iter8Service) GetIter8ExperimentTemplates()([]models.Iter8ExperimentTemplate, error) {
+func (in *Iter8Service) GetIter8ExperimentTemplates() ([]models.Iter8ExperimentTemplate, error) {
 	var templateSpecs []models.Iter8ExperimentTemplate
 	namespace, templateConfigMap := getNameFromConfig()
 	templateConfig, err := in.k8s.GetConfigMap(namespace, templateConfigMap)
-    if err == nil {
-    	for key, val := range templateConfig.Data {
+	if err == nil {
+		for key, val := range templateConfig.Data {
 			var description strings.Builder
 
-			comments := strings.Split(val,"\n")
+			comments := strings.Split(val, "\n")
 			for _, v := range comments {
 				if strings.HasPrefix(v, "#") {
 					description.WriteString(v)
 				}
 			}
-    		template := models.Iter8ExperimentTemplate {
-    			Name: key,
-    			Description: description.String(),
+			template := models.Iter8ExperimentTemplate{
+				Name:        key,
+				Description: description.String(),
 			}
 			templateSpecs = append(templateSpecs, template)
 		}
@@ -193,7 +192,7 @@ func getNameFromConfig() (string, string) {
 		templateConfigMap = conf.Extensions.Iter8.TemplateConfigMap
 	}
 	if conf.Extensions.Iter8.Namespace != "" {
-		templateConfigMap = conf.Extensions.Iter8.Namespace
+		namespace = conf.Extensions.Iter8.Namespace
 	}
 	return namespace, templateConfigMap
 }
@@ -265,30 +264,28 @@ func (in *Iter8Service) CreateIter8Experiment(namespace string, body []byte, jso
 
 func (in *Iter8Service) CreateIter8ExperimentFromTemplate(namespace string, templateName string, body []byte) (models.Iter8ExperimentDetail, error) {
 	var err error
-	vals :=  map[string]interface{}{
-		"experiment_name":"",
-		"service_name": "",
-		"baseline": "",
-		"candidates": []string {},
+	vals := map[string]interface{}{
+		"experiment_name": "",
+		"service_name":    "",
+		"baseline":        "",
+		"candidates":      []string{},
 	}
 	var empJson string
 	iter8ExperimentDetail := models.Iter8ExperimentDetail{}
 	newExperimentTemplateSpec := models.Iter8ExperimentTemplateSpec{}
 	err = json.Unmarshal(body, &newExperimentTemplateSpec)
 	if err != nil {
-		log.Infof("Unmarshall failed %s", body)
 		return iter8ExperimentDetail, err
 	}
 	vals["baseline"] = newExperimentTemplateSpec.Baseline
 	vals["candidates"] = newExperimentTemplateSpec.Candidates
-    vals["experiment_name"] = newExperimentTemplateSpec.ExperimentName
-    vals["service_name"] = newExperimentTemplateSpec.ServiceName
-	namespace, templateConfigMap := getNameFromConfig()
-	templateConfig, err := in.k8s.GetConfigMap(namespace, templateConfigMap)
+	vals["experiment_name"] = newExperimentTemplateSpec.ExperimentName
+	vals["service_name"] = newExperimentTemplateSpec.ServiceName
+	iter8namespace, templateConfigMap := getNameFromConfig()
+	templateConfig, err := in.k8s.GetConfigMap(iter8namespace, templateConfigMap)
 	if err == nil {
 		if templateString, ok := templateConfig.Data[templateName]; ok {
 			var tpl bytes.Buffer
-			log.Infof("template string is %s", templateString)
 			tmpl, err := template.New("iter8").Parse(templateString)
 			if err != nil {
 				return iter8ExperimentDetail, err
@@ -297,7 +294,6 @@ func (in *Iter8Service) CreateIter8ExperimentFromTemplate(namespace string, temp
 
 			empJsonByte, _ := sigsyaml.YAMLToJSON(tpl.Bytes())
 			empJson = string(empJsonByte)
-			log.Infof("final JSON is %s", empJson)
 		}
 	}
 	promtimer := internalmetrics.GetGoFunctionMetric("business", "Iter8Service", "CreateIter8Experiment")
@@ -305,14 +301,12 @@ func (in *Iter8Service) CreateIter8ExperimentFromTemplate(namespace string, temp
 
 	iter8ExperimentObject, err := in.k8s.CreateIter8Experiment(namespace, empJson)
 	if err != nil {
-		log.Infof("Failed to create")
 		return iter8ExperimentDetail, err
 	}
 
 	iter8ExperimentDetail.Parse(iter8ExperimentObject)
 	return iter8ExperimentDetail, nil
 }
-
 
 func (in *Iter8Service) UpdateIter8Experiment(namespace string, name string, body []byte) (models.Iter8ExperimentDetail, error) {
 	var err error
